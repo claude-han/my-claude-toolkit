@@ -40,17 +40,8 @@ MCP 有两种配置方式：
 |------|------|------|----------|
 | context7 | 云端集成 | 查询最新库文档和代码示例 | Claude.ai 设置中启用 |
 | notion | 云端集成 | 读写 Notion 页面和数据库 | Claude.ai 设置中启用 |
-| firecrawl | 本地服务 | 网页抓取和内容提取 | [firecrawl.json](./firecrawl.json) |
+| firecrawl | 本地服务 | 网页抓取和内容提取 | npx firecrawl-mcp |
 | pencil | 本地服务 | 设计编辑器（VS Code 扩展） | 随 VS Code 扩展安装 |
-
-## 在新项目中使用
-
-```bash
-# 复制 MCP 配置到项目
-cp my-claude-toolkit/mcp/firecrawl.json your-project/.mcp.json
-
-# 或合并多个配置（手动编辑 mcpServers 字段）
-```
 
 ## 常用 MCP 服务推荐
 
