@@ -1,0 +1,47 @@
+{
+  "iconLib": "remixicon",
+  "colors": {
+    "inactive": "#999999",
+    "active": "#E85D04",
+    "fromDesignTokens": true,
+    "_comment_fromDesignTokens": "为 true 时，脚本会尝试从项目的 design-tokens 或 app.scss 中读取 --primary 作为 active 颜色"
+  },
+  "icons": [
+    { "name": "home", "file": "Buildings/home-2-line.svg", "tags": ["tabbar", "page"] },
+    { "name": "calendar", "file": "Business/calendar-line.svg", "tags": ["tabbar", "page"] },
+    { "name": "user", "file": "User/user-line.svg", "tags": ["tabbar", "page"] },
+
+    { "name": "chart", "file": "Business/line-chart-line.svg", "tags": ["page"] },
+    { "name": "fitness", "file": "Health/boxing-line.svg", "tags": ["page"] },
+    { "name": "scale", "file": "Health/scales-3-line.svg", "tags": ["page"] },
+    { "name": "body-scan", "file": "Health/body-scan-line.svg", "tags": ["page"] },
+    { "name": "heart", "file": "Health/heart-line.svg", "tags": ["page"] },
+    { "name": "heart-pulse", "file": "Health/heart-pulse-line.svg", "tags": ["page"] },
+    { "name": "star", "file": "System/star-line.svg", "tags": ["page"] },
+    { "name": "star-fill", "file": "System/star-fill.svg", "tags": ["page"] },
+    { "name": "edit", "file": "Design/edit-line.svg", "tags": ["page"] },
+    { "name": "settings", "file": "System/settings-3-line.svg", "tags": ["page"] },
+    { "name": "notification", "file": "Media/notification-3-line.svg", "tags": ["page"] },
+    { "name": "search", "file": "System/search-line.svg", "tags": ["page"] },
+    { "name": "arrow-left", "file": "Arrows/arrow-left-line.svg", "tags": ["page"] },
+    { "name": "arrow-right", "file": "Arrows/arrow-right-s-line.svg", "tags": ["page"] },
+    { "name": "time", "file": "System/time-line.svg", "tags": ["page"] },
+    { "name": "add", "file": "System/add-line.svg", "tags": ["page"] },
+    { "name": "delete", "file": "System/delete-bin-line.svg", "tags": ["page"] },
+    { "name": "medal", "file": "Business/medal-line.svg", "tags": ["page"] },
+    { "name": "camera", "file": "Media/camera-line.svg", "tags": ["page"] },
+    { "name": "close", "file": "System/close-line.svg", "tags": ["page"] },
+    { "name": "check", "file": "System/check-line.svg", "tags": ["page"] },
+    { "name": "more", "file": "System/more-line.svg", "tags": ["page"] }
+  ],
+  "tabbar": {
+    "size": 81,
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      { "icon": "home", "text": "首页", "pagePath": "pages/home/index" },
+      { "icon": "calendar", "text": "预约", "pagePath": "pages/booking/index" },
+      { "icon": "user", "text": "我的", "pagePath": "pages/profile/index" }
+    ]
+  }
+}
