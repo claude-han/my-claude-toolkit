@@ -93,10 +93,53 @@ echo "源:   $REPO_DIR"
 echo "目标: $CLAUDE_DIR"
 echo ""
 
-# 同步各个模块
-sync_dir "$REPO_DIR/skills"   "$CLAUDE_DIR/skills"   "Skills（领域知识包）"
-sync_dir "$REPO_DIR/commands" "$CLAUDE_DIR/commands" "Commands（斜杠命令）"
-sync_dir "$REPO_DIR/agents"   "$CLAUDE_DIR/agents"   "Agents（子代理）"
+# 只同步 global/ 下的内容到 ~/.claude/（项目级内容需手动安装）
+sync_dir "$REPO_DIR/skills/global"   "$CLAUDE_DIR/skills"   "Skills（全局）"
+sync_dir "$REPO_DIR/commands/global" "$CLAUDE_DIR/commands" "Commands（全局）"
+sync_dir "$REPO_DIR/agents/global"   "$CLAUDE_DIR/agents"   "Agents（全局）"
+sync_dir "$REPO_DIR/rules/global"    "$CLAUDE_DIR/rules"    "Rules（全局）"
+
+# 提示项目级内容
+has_project_content=false
+for dir in skills commands agents rules; do
+  for item in "$REPO_DIR/$dir/project"/*/; do
+    [ -d "$item" ] || continue
+    local name=$(basename "$item")
+    [[ "$name" == _* ]] && continue
+    has_project_content=true
+    break 2
+  done
+  for item in "$REPO_DIR/$dir/project"/*.md; do
+    [ -f "$item" ] || continue
+    local name=$(basename "$item")
+    [[ "$name" == _* ]] && continue
+    [[ "$name" == "README.md" ]] && continue
+    has_project_content=true
+    break 2
+  done
+done
+
+if [ "$has_project_content" = true ]; then
+  echo "📁 项目级内容（需手动安装到具体项目的 .claude/ 目录）:"
+  for dir in skills commands agents rules; do
+    for item in "$REPO_DIR/$dir/project"/*/; do
+      [ -d "$item" ] || continue
+      local name=$(basename "$item")
+      [[ "$name" == _* ]] && continue
+      echo "   $dir/project/$name"
+    done
+    for item in "$REPO_DIR/$dir/project"/*.md; do
+      [ -f "$item" ] || continue
+      local name=$(basename "$item")
+      [[ "$name" == _* ]] && continue
+      [[ "$name" == "README.md" ]] && continue
+      echo "   $dir/project/$name"
+    done
+  done
+  echo ""
+  echo "   安装方式: cp -r <源> <项目>/.claude/<类型>/"
+  echo ""
+fi
 
 # Hooks 需要特殊处理（合并而非覆盖）
 if [ -f "$REPO_DIR/hooks/settings.json" ]; then
@@ -122,5 +165,6 @@ if [ "$DRY_RUN" = false ]; then
   [ -d "$CLAUDE_DIR/skills" ] && echo "  Skills:   $(ls -1d "$CLAUDE_DIR/skills"/*/ 2>/dev/null | wc -l | tr -d ' ') 个"
   [ -d "$CLAUDE_DIR/commands" ] && echo "  Commands: $(ls -1 "$CLAUDE_DIR/commands"/*.md 2>/dev/null | wc -l | tr -d ' ') 个"
   [ -d "$CLAUDE_DIR/agents" ] && echo "  Agents:   $(ls -1 "$CLAUDE_DIR/agents"/*.md 2>/dev/null | wc -l | tr -d ' ') 个"
+  [ -d "$CLAUDE_DIR/rules" ] && echo "  Rules:    $(ls -1 "$CLAUDE_DIR/rules"/*.md 2>/dev/null | wc -l | tr -d ' ') 个"
   echo ""
 fi

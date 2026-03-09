@@ -8,6 +8,7 @@
 ┌─────────────────────────────────────────────────────────┐
 │                    每次对话都生效                          │
 │  CLAUDE.md    项目记忆/规则，自动加载，确定性               │
+│  Rules        模块化规则，按路径条件加载，确定性             │
 │  Hooks        事件钩子，自动触发，确定性（100%执行）         │
 ├─────────────────────────────────────────────────────────┤
 │                    按需生效                               │
@@ -26,24 +27,37 @@
 ```
 my-claude-toolkit/
 ├── README.md                 ← 你正在读的文件
-├── sync.sh                   ← 一键同步到本地 ~/.claude/
+├── sync.sh                   ← 同步 global/ 内容到 ~/.claude/
 │
 ├── skills/                   ← 领域知识包（Claude 自动识别并按需加载）
-│   ├── taro-icons/           ← 示例：Taro 小程序图标集成
-│   │   ├── SKILL.md
-│   │   ├── references/
-│   │   └── scripts/
+│   ├── global/               ← 全局：sync.sh 自动同步到 ~/.claude/skills/
+│   │   └── ...
+│   ├── project/              ← 项目级：手动复制到特定项目的 .claude/skills/
+│   │   └── taro-icons/       ← 示例：仅 Taro 项目需要
 │   └── _template/            ← Skill 创建模板
 │       └── SKILL.md
 │
 ├── commands/                 ← 斜杠命令（用户通过 /命令名 触发）
-│   ├── review.md             ← 示例：/review 代码审查
-│   ├── daily.md              ← 示例：/daily 日报生成
+│   ├── global/               ← 全局：sync.sh 自动同步
+│   │   ├── review.md
+│   │   └── daily.md
+│   ├── project/              ← 项目级：手动复制
+│   │   └── ...
 │   └── _template.md          ← Command 创建模板
 │
 ├── agents/                   ← 子代理（独立上下文，可并行执行）
-│   ├── code-reviewer.md      ← 示例：代码审查代理
+│   ├── global/               ← 全局：sync.sh 自动同步
+│   │   └── code-reviewer.md
+│   ├── project/              ← 项目级：手动复制
+│   │   └── ...
 │   └── _template.md          ← Agent 创建模板
+│
+├── rules/                    ← 模块化规则（支持按路径条件加载）
+│   ├── global/               ← 全局：sync.sh 自动同步到 ~/.claude/rules/
+│   │   └── git-commit.md     ← Git 提交行为规则
+│   ├── project/              ← 项目级：手动复制
+│   │   └── ...
+│   └── _template.md          ← Rule 创建模板
 │
 ├── hooks/                    ← 事件钩子配置（确定性执行）
 │   ├── README.md             ← Hooks 使用说明
@@ -59,6 +73,14 @@ my-claude-toolkit/
 └── mcp/                      ← MCP 服务器配置参考
     └── README.md             ← 常用 MCP 配置说明
 ```
+
+### Global vs Project 分类原则
+
+| 类型 | 放在 `global/` | 放在 `project/` |
+|------|----------------|-----------------|
+| 判断标准 | 所有项目都可能用到 | 仅特定类型项目需要 |
+| 同步方式 | `sync.sh` 自动同步到 `~/.claude/` | 手动复制到项目的 `.claude/` |
+| 示例 | `/review`、`/daily` | `taro-icons`、框架特定命令 |
 
 ## 快速开始
 
@@ -84,8 +106,8 @@ git pull
 # 复制 CLAUDE.md 模板到项目
 cp my-claude-toolkit/claude-md/taro-miniapp.md your-project/CLAUDE.md
 
-# 复制项目级 skill
-cp -r my-claude-toolkit/skills/taro-icons your-project/.claude/skills/
+# 安装项目级 skill 到特定项目
+cp -r my-claude-toolkit/skills/project/taro-icons your-project/.claude/skills/
 
 # 复制 hooks 配置
 cp my-claude-toolkit/hooks/settings.json your-project/.claude/settings.json
@@ -108,6 +130,14 @@ Claude 根据任务上下文自动判断是否使用。适合封装可复用的�
 - 存放位置：`~/.claude/commands/`（全局）或 `.claude/commands/`（项目级）
 - 触发方式：手动输入 `/review`、`/daily` 等
 - 何时使用：你想确定性地执行某个固定流程时
+
+### Rules — 模块化规则
+
+CLAUDE.md 的模块化拆分，支持按文件路径条件加载，减少上下文噪音。
+
+- 存放位置：`~/.claude/rules/`（全局）或 `.claude/rules/`（项目级）
+- 触发方式：每次对话自动加载；带 `paths` frontmatter 的规则仅在匹配文件时加载
+- 何时使用：规则较多需要拆分管理，或某些规则只针对特定文件类型
 
 ### Hooks — 事件钩子
 
