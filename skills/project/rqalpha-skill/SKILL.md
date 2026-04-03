@@ -267,6 +267,59 @@ RQAlpha 使用国际通用 order_book_id 格式：
 | 整手交易 | 买入必须100股整手，卖出可零股 | 小资金+多标的→资金闲置 |
 | 停牌 | 无法交易，持仓保持不变 | 需在选股时过滤 |
 
+## 性能优化指南
+
+### 回测性能模型
+
+RQAlpha 单次回测耗时 = **数据冷启动** + **回测计算**
+
+- 冷启动：加载数据文件 + 框架初始化，是固定开销
+- 回测计算：遍历交易日执行策略逻辑，被 `lru_cache(None)` 加速
+
+### 缓存机制
+
+RQAlpha 使用分层缓存，但**仅在单次回测内有效**：
+
+```
+history_bars() / get_bar()
+    ↓
+DataProxy.get_bar()            ← @lru_cache(512)
+    ↓
+BaseDataSource._all_day_bars_of()  ← @lru_cache(None)  每只股票只读一次
+    ↓
+DayBarStore.get_bars()          ← 实际读取存储层
+```
+
+`_all_day_bars_of` 用 `@lru_cache(None)` 无限缓存，首次读取后永久驻内存。
+**但 `run_func()` 每次调用会重建引擎，缓存不跨回测。**
+
+### 常见性能瓶颈与优化
+
+| 瓶颈 | 原因 | 优化方案 |
+|------|------|----------|
+| 大 Parquet 逐行过滤 | `df[df["col"] == val]` 扫描全表 O(N×M) | 加载时 `groupby` 建字典索引，查询变 O(1) |
+| 单个大文件加载慢 | 1GB+ Parquet 全量加载 | 按股票分片存储（HDF5 或分文件 Parquet） |
+| 回测周期不影响耗时 | 冷启动占 90%+，日频计算极快 | 优化冷启动而非减少回测周期 |
+| 多参数扫描 | 串行跑 N 组参数 | `concurrent.futures.ProcessPoolExecutor` 并行 |
+
+### 自定义数据源性能要点
+
+实现 `AbstractDayBarStore.get_bars()` 时：
+- 返回的 numpy array 会被上层 `lru_cache(None)` 自动缓存
+- 首次调用必须快：避免 O(N) 扫描大文件，用索引/字典/分片
+- 不需要在 `get_bars()` 内部加缓存（上层已缓存，自行加是多余的）
+- `get_bars()` 返回完整历史数据（全部交易日），上层用 `searchsorted` 切片
+
+### 性能基准（本项目实测）
+
+```
+场景: 日频信号 × 283只股票 × 6个月回测
+
+优化前（逐行过滤）:  ~100s = 90s冷启动 + 10s计算
+优化后（groupby索引）: ~16s = 6s冷启动 + 10s计算
+聚宽云平台:          ~83s = 0s冷启动 + 83s计算
+```
+
 ## 常见陷阱清单
 
 ### 1. init 而非 initialize
